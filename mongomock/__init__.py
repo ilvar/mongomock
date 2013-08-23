@@ -333,7 +333,7 @@ class Collection(object):
     def _iter_documents(self, filter = None):
         return (document for document in itervalues(self._documents) if self._filter_applies(filter, document))
 
-    def find_one(self, spec_or_id=None, *args, **kwargs, **kwargs):
+    def find_one(self, spec_or_id=None, *args, **kwargs):
         try:
             return next(self.find(spec_or_id, *args, **kwargs))
         except StopIteration:
@@ -553,3 +553,4 @@ def _set_updater(doc, field_name, value):
 def _inc_updater(doc, field_name, value):
     if isinstance(doc, dict):
         doc[field_name] = doc.get(field_name, 0) + value
+ 
