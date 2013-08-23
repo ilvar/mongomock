@@ -187,7 +187,7 @@ class Collection(object):
     def __repr__(self):
         return "Collection({0}, '{1}')".format(self._Collection__database, self.name)
 
-    def insert(self, data):
+    def insert(self, data, **kwargs):
         if isinstance(data, list):
             return [self._insert(element) for element in data]
         return self._insert(data)
@@ -257,7 +257,7 @@ class Collection(object):
         # TODO: this looks a little too naive...
         return dict((k, v) for k, v in iteritems(doc) if not k.startswith("$"))
 
-    def find(self, spec = None, fields = None, filter = None, sort = None, timeout = True, limit = None):
+    def find(self, spec = None, fields = None, filter = None, sort = None, timeout = True, limit = None, **kwargs):
         if filter is not None:
             _print_deprecation_warning('filter', 'spec')
             if spec is None:
@@ -333,7 +333,7 @@ class Collection(object):
     def _iter_documents(self, filter = None):
         return (document for document in itervalues(self._documents) if self._filter_applies(filter, document))
 
-    def find_one(self, spec_or_id=None, *args, **kwargs):
+    def find_one(self, spec_or_id=None, *args, **kwargs, **kwargs):
         try:
             return next(self.find(spec_or_id, *args, **kwargs))
         except StopIteration:
@@ -395,7 +395,7 @@ class Collection(object):
             self.update({"_id": to_save["_id"]}, to_save, True,
                         manipulate, safe, _check_keys = True, **kwargs)
             return to_save.get("_id", None)
-    def remove(self, spec_or_id = None, search_filter = None):
+    def remove(self, spec_or_id = None, search_filter = None, **kwargs):
         """Remove objects matching spec_or_id from the collection."""
         if search_filter is not None:
             _print_deprecation_warning('search_filter', 'spec_or_id')
@@ -408,17 +408,17 @@ class Collection(object):
             doc_id = doc['_id']
             del self._documents[doc_id]
 
-    def count(self):
+    def count(self, **kwargs):
         return len(self._documents)
 
-    def drop(self):
+    def drop(self, **kwargs):
         del self._documents
         self._documents = {}
 
     def ensure_index(self, key_or_list, cache_for=300, **kwargs):
         pass
 
-    def map_reduce(self, map_func, reduce_func, out, full_response=False, query=None, limit=None):
+    def map_reduce(self, map_func, reduce_func, out, full_response=False, query=None, limit=None, **kwargs):
         if execjs is None:
             raise NotImplementedError(
                 "PyExecJS is required in order to run Map-Reduce. "
@@ -498,7 +498,7 @@ class Collection(object):
             ret_val = full_dict
         return ret_val
 
-    def inline_map_reduce(self, map_func, reduce_func, full_response=False, query=None, limit=None):
+    def inline_map_reduce(self, map_func, reduce_func, full_response=False, query=None, limit=None, **kwargs):
         return self.map_reduce(map_func, reduce_func, {'inline':1}, full_response, query, limit)
 
 
@@ -521,7 +521,7 @@ class Cursor(object):
             self._limit -= 1
         return next(self._dataset)
     next = __next__
-    def sort(self, key_or_list, direction = None):
+    def sort(self, key_or_list, direction = None, **kwargs):
         if direction is None:
             direction = 1
         if isinstance(key_or_list, (tuple, list)):
@@ -530,18 +530,18 @@ class Cursor(object):
         else:
             self._dataset = iter(sorted(self._dataset, key = lambda x:x[key_or_list], reverse = direction < 0))
         return self
-    def count(self):
+    def count(self, **kwargs):
         arr = [x for x in self._dataset]
         count = len(arr)
         self._dataset = iter(arr)
         return count
-    def skip(self, count):
+    def skip(self, count, **kwargs):
         self._skip = count
         return self
-    def limit(self, count):
+    def limit(self, count, **kwargs):
         self._limit = count
         return self
-    def batch_size(self, count):
+    def batch_size(self, count, **kwargs):
         return self
     def close(self):
         pass
